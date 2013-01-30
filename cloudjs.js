@@ -1,5 +1,6 @@
 var cloudjs = {
 	api_bindings: [],
+	api_select_bindings: [],
 	api_list_bindings: [],
 	api_after_form_api_json: [],
 	api_before_form_api_json: [],
@@ -18,11 +19,11 @@ cloudjs.init = function ()
 	// Setup the page for the first time. We call this later with every ajax body change.
 	this.setup_page();
 
-	// Bind form submit. When someone adds the attribute data-cjs-form="api-post"
+	// Bind form submit. When someone adds the attribute data-cjs="form-api-post"
 	// to their form we know we want to have cloudjs manage the API call.
 	// We assume a json response. We then parse the json and show the errors
 	// on the screen. On success we call cloudjs.after_api_post_success.  
-	$(document).on('submit', '[data-cjs="form-api-json"]', function() {
+	$(document).on('submit', '[data-cjs="form-api-json"]', function() {	
 		var $this = $(this);
 		var success_url = $this.attr('data-succes');
 		var fail_url = $this.attr('data-fail');
@@ -46,12 +47,21 @@ cloudjs.init = function ()
 			// Do we have errors? If so ship it off to our error handler.
 			if(! json.status)
 			{
-				cloudjs.manage_error($this, json.errors);
+				// At the form we can set the function that managed the error. 
+				// If not we revert to the default error handler.
+				if($this.data('cjs-error'))
+				{
+					cloudjs[$this.data('cjs-error')]($this, json.errors);
+				} else
+				{
+					cloudjs.manage_error($this, json.errors);
+				}
 			} else
 			{
 				cloudjs.after_api_post_success($this, json);
-				cloudjs.run_api_bindings();
+				cloudjs.run_api_select_bindings();
 				cloudjs.run_api_list_bindings();
+				cloudjs.run_api_bindings();
 			}
 			
 			// We are done. Loop through our callbacks.
@@ -196,6 +206,18 @@ cloudjs.history.load_body = function ()
 }
 
 //
+// Change the page.
+//
+cloudjs.change_page = function (href)
+{
+	cloudjs.history.verb = 'get';
+	cloudjs.current_url = href;
+	cloudjs.history.data = {};
+	history.pushState('', cloudjs.page_title, cloudjs.current_url);
+	cloudjs.history.load_body();
+}
+
+//
 // Call after page load.
 //
 cloudjs.after_body_load = function (response)
@@ -234,8 +256,9 @@ cloudjs.setup_page = function (response)
 //
 cloudjs.refresh_bindings = function ()
 {
-	this.run_api_bindings();
+	this.run_api_select_bindings();
 	this.run_api_list_bindings();
+	this.run_api_bindings();
 }
 
 //
@@ -244,6 +267,7 @@ cloudjs.refresh_bindings = function ()
 cloudjs.clear_bindings = function ()
 {
 	this.api_bindings = [];
+	this.api_select_bindings = [];
 	this.api_list_bindings = [];
 	this.api_after_form_api_json = [];
 	this.api_before_form_api_json = [];
@@ -273,6 +297,11 @@ cloudjs.add_binding = function (type, url, tmpl, cont, callback)
 {
 	switch(type)
 	{
+		case 'api-select':
+			var d = tmpl.split(':::');
+			this.api_select_bindings.push({ url: url, cont: cont, selected: d[3], value: d[0], text: d[1], callback: callback });
+		break;
+	
 		case 'api':
 			this.api_bindings.push({ url: url, callback: callback });
 		break;
@@ -284,6 +313,15 @@ cloudjs.add_binding = function (type, url, tmpl, cont, callback)
 }
 
 //
+// Wrapper funcion for add_binding. Makes is a little
+// cleared to remember how this function works. 
+//
+cloudjs.add_api_select_binding = function (url, cont, selected, value, text, callback)
+{
+	this.add_binding('api-select', url, value + ':::' + text + ':::' + selected, cont, callback);
+}
+
+//
 // Wrapper function for add_binding. Makes it a little
 // cleaner to remember this functions argments with 
 // descriptive function names.
@@ -291,6 +329,62 @@ cloudjs.add_binding = function (type, url, tmpl, cont, callback)
 cloudjs.add_api_list_binding = function (url, tmpl, cont, callback)
 {
 	this.add_binding('api-list', url, tmpl, cont, callback);
+}
+
+//
+// This is a binding where the API returns a list. 
+// Each entry in the list is a option in a select menu.
+//
+cloudjs.run_api_select_bindings = function ()
+{
+	for(var i in this.api_select_bindings)
+	{	
+		this._manage_select(i);
+	}
+}
+
+//
+// Helper function to manage the scope as
+// things get wonky in a non-blocking world. 
+//
+cloudjs._manage_select = function (i)
+{
+	var callback = this.api_select_bindings[i].callback;
+	var cont = this.api_select_bindings[i].cont;
+	var value = this.api_select_bindings[i].value; 
+	var text = this.api_select_bindings[i].text;
+	var selected = this.api_select_bindings[i].selected;
+	
+	$.get(this.api_select_bindings[i].url, function (json) {			
+	  // Make sure nothing went wrong with the ajax call.
+	  if(! json.status)
+	  {
+	    return false;
+	  }	
+	
+	  // Loop through and build out the selector.
+	  var html = '';
+	  
+	  for(var r in json.data)
+	  {				
+	  	if(json.data[r][value] == selected)
+	  	{
+	  		html += '<option value="' + json.data[r][value] + '" selected>' + json.data[r][text] + '</option>';
+	  	} else
+	  	{
+	  		html += '<option value="' + json.data[r][value] + '">' + json.data[r][text] + '</option>';					
+	  	}
+	  }
+	  
+	  // Set the html
+	  $('[data-cjs-select="' + cont + '"]').html(html);
+	  
+	  // Call the callback.
+	  if((typeof callback) == 'function')
+	  {
+	  	callback(json);
+	  }
+	});
 }
 
 //
