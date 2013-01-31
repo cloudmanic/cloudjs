@@ -1,5 +1,30 @@
 # HTML 5 History Linking
 
+## Api Binding
+
+With CloudJs we have something called "Api Binding". This typically is where we make an ajax call for a particular data object. The API will return the requested object. From there you match the values returned to elements within the dom.
+
+For example. Lets say we have an API call that returns leases that we have stored in our accounting app. For example this api call might look something like this: `http://example.com/api/v1/leases/id/66?format=json`. We can use CloudJs to bind the data attached to the lease with id 66. Here is how we would do that. 
+
+```javascript
+cloudjs.add_api_binding('http://example.com/api/v1/leases/id/66?format=json');
+```
+
+Now maybe there is some extra processing we want to do after the ajax call completes and the dom is updated. We can pass in a callback to the function above.
+
+```javascript
+cloudjs.add_api_binding('http://example.com/api/v1/leases/id/66?format=json', function (json) {
+	alert('Woot! ajax call was complete');
+});
+```
+We could see the results of the AJAX call by looking at the json object passed in as a callback function argment.
+
+The data is binded to the dom in a few different ways. 
+
+* Any input element with the same name as the ajax returned. For example if we had `<input type="text" name="Blah" />` and the AJAX return a variable named "Blah" the value of the input field would be updated with the value returned from the API call. 
+
+* We also can set the data-cjs="" attribute with any DOM element and CloudJs will update the text. For example we could do something like this `<p data-cjs="text: Blah">Loading...</p>`. When the API call is returned "Loading..." would be replaced with the contents of Blah if it was returned in the API result. 
+
 ## How to disable history linking on certain links?
 
 You can disable history liking 3 ways. You can simply set the href attribute to "#" or you can apply one of two classes to the link: cjs-no-history-true, or cjs-no-history-false. The differnce is true will continue to go on to your other bindings. The false version will just stop right there and not call your other bindings. 

@@ -237,11 +237,6 @@ cloudjs.refresh_page_no_scroll = function()
 	cloudjs.history.load_body()
 }
 
-// -------------- End Helper Functions ------------ //
-
-
-// -------------- End History ----------------- //
-
 //
 // Setup Page. We call this on every new page load.
 //
@@ -249,28 +244,6 @@ cloudjs.setup_page = function (response)
 {
 	this.refresh_bindings();
 	this.after_body_load(response);
-}
-
-//
-// Refresh bindings.
-//
-cloudjs.refresh_bindings = function ()
-{
-	this.run_api_select_bindings();
-	this.run_api_list_bindings();
-	this.run_api_bindings();
-}
-
-//
-// Clear the all bindings.
-//
-cloudjs.clear_bindings = function ()
-{
-	this.api_bindings = [];
-	this.api_select_bindings = [];
-	this.api_list_bindings = [];
-	this.api_after_form_api_json = [];
-	this.api_before_form_api_json = [];
 }
 
 //
@@ -288,6 +261,54 @@ cloudjs.add_form_post_callback = function (type, func)
 			this.api_before_form_api_json.push(func);
 		break;
 	}
+}
+
+//
+// After a succes in api post.
+//
+cloudjs.after_api_post_success = function ($this, json)
+{
+	return true;
+}
+
+//
+// Manage Error.
+//
+cloudjs.manage_error = function ($this, errors)
+{
+	return true;
+}
+
+//
+// Clear all error from the screen.
+//
+cloudjs.clear_error = function()
+{
+	return true;
+}
+
+// ------------------ Bindings ---------------------------------- //
+
+//
+// Clear the all bindings.
+//
+cloudjs.clear_bindings = function ()
+{
+	this.api_bindings = [];
+	this.api_select_bindings = [];
+	this.api_list_bindings = [];
+	this.api_after_form_api_json = [];
+	this.api_before_form_api_json = [];
+}
+
+//
+// Refresh bindings.
+//
+cloudjs.refresh_bindings = function ()
+{
+	this.run_api_select_bindings();
+	this.run_api_list_bindings();
+	this.run_api_bindings();
 }
 
 //
@@ -310,6 +331,14 @@ cloudjs.add_binding = function (type, url, tmpl, cont, callback)
 			this.api_list_bindings.push({ url: url, tmpl: tmpl, cont: cont, callback: callback });		
 		break;
 	}
+}
+
+//
+// Wrapper function for adding value bindings.
+//
+cloudjs.add_api_binding = function (url, callback)
+{
+	this.add_binding('api', url, null, null, callback);
 }
 
 //
@@ -355,6 +384,13 @@ cloudjs._manage_select = function (i)
 	var text = this.api_select_bindings[i].text;
 	var selected = this.api_select_bindings[i].selected;
 	
+	// Make sure we have the container on the dom.
+	if(! $('[data-cjs-select="' + cont + '"]').length)
+	{
+		return false;
+	}
+	
+	// Make Ajax call to get data for this element.
 	$.get(this.api_select_bindings[i].url, function (json) {			
 	  // Make sure nothing went wrong with the ajax call.
 	  if(! json.status)
@@ -451,13 +487,13 @@ cloudjs.run_api_bindings = function ()
 				for(var field in json.data)
 				{
 					// Fields
-					switch($('[name="' + field + '"]').attr('type'))
-					{
-						case 'radio':
+					switch($('[name="' + field + '"]').prop('tagName'))
+					{					
+						case 'RADIO':
 							$('[name="' + field + '"]').filter('[value="' + json.data[field] + '"]').prop('checked', true);
 						break;
 					
-						case 'checkbox':
+						case 'CHECKBOX':
 							if(json.data[field] == "0")
 							{
 								$('[name="' + field + '"]').prop('checked', false);
@@ -485,30 +521,6 @@ cloudjs.run_api_bindings = function ()
 			}
 		});
 	}
-}
-
-//
-// After a succes in api post.
-//
-cloudjs.after_api_post_success = function ($this, json)
-{
-	return true;
-}
-
-//
-// Manage Error.
-//
-cloudjs.manage_error = function ($this, errors)
-{
-	return true;
-}
-
-//
-// Clear all error from the screen.
-//
-cloudjs.clear_error = function()
-{
-	return true;
 }
 
 // ------------------ Handlebars Helpers ------------------------ //
