@@ -450,8 +450,6 @@ cloudjs.run_api_list_bindings = function ()
 			}
 		}
 		
-		alert(url);
-		
 		// Make query.
 		$.get(url, function (json) {
 			// Compile the template.
