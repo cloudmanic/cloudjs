@@ -4,6 +4,7 @@ var cloudjs = {
 	api_list_bindings: [],
 	api_after_form_api_json: [],
 	api_before_form_api_json: [],
+	api_url_replace: {},
 	page_title: '',
 	current_url: '',
 	history: { loadpop: false, error_page: '', scroll_top: true, focus: '', verb: 'get', data: {} }
@@ -299,6 +300,7 @@ cloudjs.clear_bindings = function ()
 	this.api_list_bindings = [];
 	this.api_after_form_api_json = [];
 	this.api_before_form_api_json = [];
+	this.api_url_replace = [];
 }
 
 //
@@ -436,8 +438,22 @@ cloudjs.run_api_list_bindings = function ()
 		var tmpl = this.api_list_bindings[i].tmpl;
 		var cont = this.api_list_bindings[i].cont;
 		var callback = this.api_list_bindings[i].callback;
+		var url = this.api_list_bindings[i].url;
 		
-		$.get(this.api_list_bindings[i].url, function (json) {
+		// Filter the url and add any search and replaces.
+		if(typeof cloudjs.api_url_replace[cont] != 'undefined')
+		{
+			for(var r in cloudjs.api_url_replace[cont])
+			{
+				var val = $('[data-cjs="replace: ' + cloudjs.api_url_replace[cont][r].term + '"]').val();
+				url = url.replace(':' + cloudjs.api_url_replace[cont][r].term + ':', val);
+			}
+		}
+		
+		alert(url);
+		
+		// Make query.
+		$.get(url, function (json) {
 			// Compile the template.
 			var source = $(tmpl).html();
 			var list = Handlebars.compile(source);
@@ -521,6 +537,19 @@ cloudjs.run_api_bindings = function ()
 			}
 		});
 	}
+}
+
+//
+// Add url replace.
+//
+cloudjs.add_url_replace = function (cont, term)
+{
+	if((typeof this.api_url_replace[cont]) == 'undefined')
+	{
+		this.api_url_replace[cont] = [];
+	} 
+	
+	this.api_url_replace[cont].push({ term: term, type: 'value' });
 }
 
 // ------------------ Handlebars Helpers ------------------------ //
