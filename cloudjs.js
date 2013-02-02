@@ -554,6 +554,14 @@ cloudjs.add_url_replace = function (cont, term)
 
 // ------------------ Handlebars Helpers ------------------------ //
 
+
+//
+// HTMLify a string.
+//
+Handlebars.registerHelper('htmlify', function(lvalue, rvalue, options) {
+	return new Handlebars.SafeString(lvalue);
+});
+
 //
 // {{compare unicorns ponies operator="<"}}
 // 	I knew it, unicorns are just low-quality ponies!
