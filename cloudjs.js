@@ -219,15 +219,12 @@ cloudjs.change_page = function (href)
 }
 
 //
-// Call after page load.
+// Refresh page.
 //
-cloudjs.after_body_load = function (response)
+cloudjs.refresh_page = function ()
 {
-	return true;
+	cloudjs.history.load_body();
 }
-
-// -------------- Helper Functions ---------------- //
-
 
 //
 // Refresh current page without a scroll to the top.
@@ -237,6 +234,17 @@ cloudjs.refresh_page_no_scroll = function()
 	cloudjs.history.scroll_top = false;
 	cloudjs.history.load_body()
 }
+
+//
+// Call after page load.
+//
+cloudjs.after_body_load = function (response)
+{
+	return true;
+}
+
+// -------------- Helper Functions ---------------- //
+
 
 //
 // Setup Page. We call this on every new page load.
@@ -446,6 +454,13 @@ cloudjs.run_api_list_bindings = function ()
 			for(var r in cloudjs.api_url_replace[cont])
 			{
 				var val = $('[data-cjs="replace: ' + cloudjs.api_url_replace[cont][r].term + '"]').val();
+				
+				// Check for checkboxes / radio buttons
+				if(($('[data-cjs="replace: ' + cloudjs.api_url_replace[cont][r].term + '"]').prop('type') == 'radio') || ($('[data-cjs="replace: ' + cloudjs.api_url_replace[cont][r].term + '"]').prop('type') == 'checkbox'))
+				{
+					val = $('[data-cjs="replace: ' + cloudjs.api_url_replace[cont][r].term + '"]:checked').val();
+				} 
+				
 				url = url.replace(':' + cloudjs.api_url_replace[cont][r].term + ':', val);
 			}
 		}
