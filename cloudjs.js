@@ -138,6 +138,7 @@ cloudjs.history.setup_linking = function ()
 		if($this.hasClass('cjs-no-history-true')) { return true; }
 		if($this.hasClass('cjs-no-history-false')) { return false; }	
 		if($this.attr('href') == '#') { return false; }
+		if($(this).attr('href') == 'javascript:void(null);') { return false; }
 
 		// Push the history state and load the body.
 		cloudjs.history.verb = 'get';
