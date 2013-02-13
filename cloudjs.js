@@ -353,12 +353,28 @@ cloudjs.add_api_binding = function (url, callback)
 }
 
 //
+// Clear API bindings.
+//
+cloudjs.clear_api_bindings = function ()
+{
+	this.api_bindings = [];	
+}
+
+//
 // Wrapper funcion for add_binding. Makes is a little
 // cleared to remember how this function works. 
 //
 cloudjs.add_api_select_binding = function (url, cont, selected, value, text, callback)
 {
 	this.add_binding('api-select', url, value + ':::' + text + ':::' + selected, cont, callback);
+}
+
+//
+// Clear API select bindings.
+//
+cloudjs.clear_api_select_bindings = function ()
+{
+	this.api_select_bindings = [];
 }
 
 //
@@ -369,6 +385,14 @@ cloudjs.add_api_select_binding = function (url, cont, selected, value, text, cal
 cloudjs.add_api_list_binding = function (url, tmpl, cont, callback)
 {
 	this.add_binding('api-list', url, tmpl, cont, callback);
+}
+
+//
+// Clear the API list bindings.
+//
+cloudjs.clear_api_list_bindings = function ()
+{
+	this.api_list_bindings = [];
 }
 
 //
