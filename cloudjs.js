@@ -541,13 +541,13 @@ cloudjs.run_api_bindings = function ()
 				for(var field in json.data)
 				{
 					// Fields
-					switch($('[name="' + field + '"]').prop('tagName'))
+					switch($('[name="' + field + '"]').attr('type'))
 					{					
-						case 'RADIO':
+						case 'radio':
 							$('[name="' + field + '"]').filter('[value="' + json.data[field] + '"]').prop('checked', true);
 						break;
 					
-						case 'CHECKBOX':
+						case 'checkbox':
 							if(json.data[field] == "0")
 							{
 								$('[name="' + field + '"]').prop('checked', false);
