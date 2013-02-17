@@ -491,35 +491,42 @@ cloudjs.run_api_list_bindings = function ()
 		}
 		
 		// Make query.
-		$.get(url, function (json) {
-			// Compile the template.
-			var source = $(tmpl).html();
-			var list = Handlebars.compile(source);
-			
-			// Make sure nothing went wrong with the ajax call.
-			if(! json.status)
-			{
-			  return false;
-			}
-			
-			// Render list to screen.
-			$(cont).html(list(json));
-			
-			// Show hide stuff based on the size of the list.
-			if(json.data.length > 0)
-			{
-				$('[data-cjs="api-list-no-results-' + index + '"]').hide();
-				$('[data-cjs="api-list-results-' + index + '"]').show();
-			} else
-			{
-				$('[data-cjs="api-list-no-results-' + index + '"]').show();
-				$('[data-cjs="api-list-results-' + index + '"]').hide();				
-			}
-			
-			// Call the callback.
-			if((typeof callback) == 'function')
-			{
-				callback();
+		$.ajax({
+			url: url,
+			cont: cont,
+			index: index,
+			callback: callback,
+			tmpl: tmpl,
+			success: function (json) {		
+				// Compile the template.
+				var source = $(this.tmpl).html();
+				var list = Handlebars.compile(source);
+				
+				// Make sure nothing went wrong with the ajax call.
+				if(! json.status)
+				{
+				  return false;
+				}
+				
+				// Render list to screen.
+				$(this.cont).html(list(json));
+				
+				// Show hide stuff based on the size of the list.
+				if(json.data.length > 0)
+				{
+					$('[data-cjs="api-list-no-results-' + this.index + '"]').hide();
+					$('[data-cjs="api-list-results-' + this.index + '"]').show();
+				} else
+				{
+					$('[data-cjs="api-list-no-results-' + this.index + '"]').show();
+					$('[data-cjs="api-list-results-' + this.index + '"]').hide();				
+				}
+				
+				// Call the callback.
+				if((typeof this.callback) == 'function')
+				{
+					this.callback();
+				}
 			}
 		});
 	}
