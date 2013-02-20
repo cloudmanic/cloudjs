@@ -572,6 +572,7 @@ cloudjs.run_api_bindings = function ()
 					
 					// Data attribute 
 					$('[data-cjs="text: ' + field + '"]').text(json.data[field]);
+					$('[data-cjs="html: ' + field + '"]').html(json.data[field]);
 				}
 			}
 			
