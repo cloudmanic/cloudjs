@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Cloudmanic CloudJs // API List Binding</title>
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+		<script src="../jquery.1.8.2.min.js" type="text/javascript"></script>
+		<script src="../handlebars-1.0.rc.1.js" type="text/javascript"></script>
+		<script src="../cloudjs.js" type="text/javascript"></script>
+	</head>
+	
+	<body>
+		<table>
+			<thead>
+				<tr>
+					<th>First Name</th>
+					<th>Last Name</th>
+				</tr>
+			</thead>
+			
+			<tbody id="users-list-cont"></tbody>
+		</table>
+		
+		<a href="#" class="load-data">Load Data</a>
+	</body>
+</html>
+
+<script id="users-list-tmpl" type="text/x-handlebars-template">
+{{#each data}}
+	<tr>
+	  <td><a href="#">{{FirstName}}</a></td>
+	  <td><a href="#">{{LastName}}</a></td>
+	</tr>
+{{/each}}
+</script>
+
+<script type="text/javascript">
+cloudjs.add_api_list_binding('get.php', '#users-list-tmpl', '#users-list-cont', function () {
+	// This is an optional callback that is called when the api call is done and the html is rendered. 
+	alert('api call done');
+});
+
+// Load data click.
+$('.load-data').click(function () {
+	cloudjs.refresh_bindings();	
+});
+</script>
