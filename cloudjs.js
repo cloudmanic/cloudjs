@@ -26,7 +26,8 @@ cloudjs.init = function ()
 	// on the screen. On success we call cloudjs.after_api_post_success.  
 	$(document).on('submit', '[data-cjs="form-api-json"]', function() {	
 		var $this = $(this);
-		var success_url = $this.attr('data-succes');
+		var refresh = $this.data('refresh');
+		var success_url = $this.attr('data-success');
 		var fail_url = $this.attr('data-fail');
 		var url = $this.attr('action');
 		var data = $this.serialize();
@@ -59,16 +60,27 @@ cloudjs.init = function ()
 				}
 			} else
 			{
-				cloudjs.after_api_post_success($this, json);
-				cloudjs.run_api_select_bindings();
-				cloudjs.run_api_list_bindings();
-				cloudjs.run_api_bindings();
+				// No need to do this if we are just going to reload the page.
+				if((! success_url) && (! refresh))
+				{
+					cloudjs.after_api_post_success($this, json);
+					cloudjs.run_api_select_bindings();
+					cloudjs.run_api_list_bindings();
+					cloudjs.run_api_bindings();
+				}
 			}
 			
 			// We are done. Loop through our callbacks.
 			for(var i in cloudjs.api_after_form_api_json)
 			{
 				cloudjs.api_after_form_api_json[i](json);
+			}
+			
+			// Rebuild the html
+			if(json.status && refresh)
+			{
+			  cloudjs.refresh_page_no_scroll();
+			  return false;
 			}
 			
 			// If this is successful and we passed in a url to 
