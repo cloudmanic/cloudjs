@@ -537,7 +537,7 @@ cloudjs.run_api_list_bindings = function ()
 				// Call the callback.
 				if((typeof this.callback) == 'function')
 				{
-					this.callback();
+					this.callback(json);
 				}
 			}
 		});
