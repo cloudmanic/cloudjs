@@ -37,7 +37,7 @@ You can disable history liking 3 ways. You can simply set the href attribute to 
 
 When it comes to forms sometimes we want to do special ajax magic when submitting them instead of the default way web browsers handle forms. We provide some fancy ways of managing forms via CloudJs.
 
-* Form to API - This is where we bind the form submit to a ajax call in the background. To make a form manage a call via this method simply add the following attribute to your form: `data-cjs="form-api-post"`
+* Form to API - This is where we bind the form submit to a ajax call in the background. To make a form manage a call via this method simply add the following attribute to your form: `data-cjs="form-api-json"`
 
 ## Managing error from Form to API posts
 
