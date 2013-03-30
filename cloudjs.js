@@ -618,6 +618,14 @@ cloudjs.add_url_replace = function (cont, term)
 // ------------------ Polling ------------------------ //
 
 //
+// Set polling delay.
+//
+cloudjs.set_polling_delay = function (delay)
+{
+	cloudjs.poll_delay = delay;
+}
+
+//
 // Add a new polling job. We pass in the name, url, and the callback.
 //
 cloudjs.add_polling = function (name, url, callback)
