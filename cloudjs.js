@@ -5,6 +5,8 @@ var cloudjs = {
 	api_after_form_api_json: [],
 	api_before_form_api_json: [],
 	api_url_replace: {},
+	polling_list: {},
+	poll_delay: 3000,
 	page_title: '',
 	current_url: '',
 	history: { loadpop: false, error_page: '', scroll_top: true, focus: '', verb: 'get', data: {} }
@@ -170,6 +172,9 @@ cloudjs.history.load_body = function ()
 {			
 	// Clear past bindings.
 	cloudjs.clear_bindings();
+	
+	// Stop polling.
+	cloudjs.polling_remove_all();
 
 	// Set ajax settings.
 	var settings = {
@@ -608,6 +613,88 @@ cloudjs.add_url_replace = function (cont, term)
 	} 
 	
 	this.api_url_replace[cont].push({ term: term, type: 'value' });
+}
+
+// ------------------ Polling ------------------------ //
+
+//
+// Add a new polling job. We pass in the name, url, and the callback.
+//
+cloudjs.add_polling = function (name, url, callback)
+{
+	cloudjs.polling_list[name] = { name: name, url: url, since: 0, callback: callback }
+}
+
+//
+// Remove a poll.
+//
+cloudjs.remove_poll = function (name)
+{
+	if((typeof cloudjs.polling_list[name]) == 'undefined')
+	{
+		return false;
+	}
+	
+	delete cloudjs.polling_list[name];
+}
+
+//
+// Remove all polls. 
+//
+cloudjs.polling_remove_all = function ()
+{
+	for(var i in cloudjs.polling_list)
+	{
+		cloudjs.remove_poll(cloudjs.polling_list[i].name);
+	}
+}
+
+//
+// Start polling.
+//
+cloudjs.start_polling = function ()
+{
+	for(var i in cloudjs.polling_list)
+	{
+		cloudjs.run_poll(cloudjs.polling_list[i].name);
+	}
+}
+
+//
+// Run the poll.
+//
+cloudjs.run_poll = function (name)
+{
+	// Make sure this poll is still active.
+	if((typeof cloudjs.polling_list[name]) == 'undefined')
+	{
+		return false;
+	}
+	
+	// Send ajax get request.	
+	var url = cloudjs.polling_list[name].url + '?since=' + cloudjs.polling_list[name].since + '&name=' + name;
+	$.get(url, function (response) {
+		// If the polling has not been deactivated we just return.
+		if((typeof cloudjs.polling_list[name]) == 'undefined')
+		{
+			return false;
+		}
+	
+		// On success send to callback.
+		if((cloudjs.polling_list[name].since > 0) && (parseInt(response) > 0))
+		{
+			cloudjs.polling_list[name].callback(response);
+		}
+		
+		// Set the new since.
+		if(((typeof cloudjs.polling_list[name]) != 'undefined') && (parseInt(response) > 0))
+		{
+			cloudjs.polling_list[name].since = response;
+		}
+		
+		// Call this function again to start the polling all over again.
+		setTimeout(function () { cloudjs.run_poll(name); }, cloudjs.poll_delay);
+	});
 }
 
 // ------------------ Handlebars Helpers ------------------------ //
