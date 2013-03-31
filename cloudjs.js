@@ -632,9 +632,14 @@ cloudjs.start_websockets = function (url)
 		// Connect
 		this.ws_socket = io.connect(url);
   	    
+		// On refresh
+		this.ws_socket.on('refresh', function (data) 
+		{
+			cloudjs.websocket_recieved('refresh', data);
+		});
+  	    
     // Return socket.
     return this.ws_socket;
-    
   } catch (e)
   {
 	  return false;
