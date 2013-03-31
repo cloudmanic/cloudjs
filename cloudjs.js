@@ -630,20 +630,36 @@ cloudjs.set_polling_delay = function (delay)
 //
 cloudjs.add_polling = function (name, url, callback)
 {
-	cloudjs.polling_list[name] = { name: name, url: url, since: 0, callback: callback }
+	var index = new Date().getTime();
+	cloudjs.polling_list[index] = { name: name, url: url, since: 0, callback: callback }
+	return index;
 }
 
 //
-// Remove a poll.
+// Remove poll by index.
 //
-cloudjs.remove_poll = function (name)
+cloudjs.remove_poll_by_id = function (id)
 {
-	if((typeof cloudjs.polling_list[name]) == 'undefined')
+	if((typeof cloudjs.polling_list[id]) == 'undefined')
 	{
 		return false;
 	}
 	
-	delete cloudjs.polling_list[name];
+	delete cloudjs.polling_list[id];
+}
+
+//
+// Remove a poll by name.
+//
+cloudjs.remove_poll = function (name)
+{	
+	for(var i in cloudjs.polling_list)
+	{
+		if(cloudjs.polling_list[i].name == name)
+		{
+			cloudjs.remove_poll_by_id(i);
+		}
+	}
 }
 
 //
@@ -653,8 +669,24 @@ cloudjs.polling_remove_all = function ()
 {
 	for(var i in cloudjs.polling_list)
 	{
-		cloudjs.remove_poll(cloudjs.polling_list[i].name);
+		cloudjs.remove_poll_by_id(i);
 	}
+}
+
+//
+// Get poll index by name.
+//
+cloudjs.get_poll_index_by_name = function (name)
+{
+	for(var i in cloudjs.polling_list)
+	{
+		if(cloudjs.polling_list[i].name == name)
+		{
+			return i;
+		}
+	}
+	
+	return false;
 }
 
 //
@@ -674,30 +706,31 @@ cloudjs.start_polling = function ()
 cloudjs.run_poll = function (name)
 {
 	// Make sure this poll is still active.
-	if((typeof cloudjs.polling_list[name]) == 'undefined')
+	var poll = cloudjs.get_poll_index_by_name(name);
+	if(! poll)
 	{
 		return false;
 	}
 	
 	// Send ajax get request.	
-	var url = cloudjs.polling_list[name].url + '?since=' + cloudjs.polling_list[name].since + '&name=' + name;
+	var url = cloudjs.polling_list[poll].url + '?since=' + cloudjs.polling_list[poll].since + '&name=' + name;
 	$.get(url, function (response) {
 		// If the polling has not been deactivated we just return.
-		if((typeof cloudjs.polling_list[name]) == 'undefined')
+		if((typeof cloudjs.polling_list[poll]) == 'undefined')
 		{
 			return false;
 		}
 	
 		// On success send to callback.
-		if((cloudjs.polling_list[name].since > 0) && (parseInt(response) > 0))
+		if((cloudjs.polling_list[poll].since > 0) && (parseInt(response) > 0))
 		{
-			cloudjs.polling_list[name].callback(response);
+			cloudjs.polling_list[poll].callback(response);
 		}
 		
 		// Set the new since.
-		if(((typeof cloudjs.polling_list[name]) != 'undefined') && (parseInt(response) > 0))
+		if(((typeof cloudjs.polling_list[poll]) != 'undefined') && (parseInt(response) > 0))
 		{
-			cloudjs.polling_list[name].since = response;
+			cloudjs.polling_list[poll].since = response;
 		}
 		
 		// Call this function again to start the polling all over again.
