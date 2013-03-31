@@ -94,3 +94,9 @@ cloudjs.new_lease_error = function ($this, errors)
 
 * data-cjs="text: IndexName"
 * data-cjs="form-api-json"
+
+# Polling
+
+cloudjs.set_polling_delay(5000);
+cloudjs.add_polling('SupportEmails', 'http://example.com/poll', function () { });
+cloudjs.start_polling();

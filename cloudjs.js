@@ -6,6 +6,8 @@ var cloudjs = {
 	api_before_form_api_json: [],
 	api_url_replace: {},
 	polling_list: {},
+	ws_callbacks: {},
+	ws_socket: null,
 	poll_delay: 3000,
 	page_title: '',
 	current_url: '',
@@ -175,6 +177,9 @@ cloudjs.history.load_body = function ()
 	
 	// Stop polling.
 	cloudjs.polling_remove_all();
+	
+	// Clear websocket callback.
+	cloudjs.clear_websocket_callbacks();
 
 	// Set ajax settings.
 	var settings = {
@@ -613,6 +618,66 @@ cloudjs.add_url_replace = function (cont, term)
 	} 
 	
 	this.api_url_replace[cont].push({ term: term, type: 'value' });
+}
+
+// ------------------ Websockets --------------------- //
+
+//
+// Start websockets.
+//
+cloudjs.start_websockets = function (url)
+{
+	// Setup socket.io
+	try {
+		// Connect
+		this.ws_socket = io.connect(url);
+  	    
+    // Return socket.
+    return this.ws_socket;
+    
+  } catch (e)
+  {
+	  return false;
+  }
+}
+
+//
+// Add a websocket callback.
+//
+cloudjs.set_websocket_callback = function (action, callback)
+{
+	if((typeof this.ws_callbacks[action]) == 'undefined')
+	{
+		this.ws_callbacks[action] = [];
+	}
+
+	this.ws_callbacks[action].push(callback);
+}
+
+//
+// Clear websocket callbacks.
+//
+cloudjs.clear_websocket_callbacks = function()
+{
+	this.ws_callbacks = {};
+}
+
+//
+// Trigger a websocket has been received.
+//
+cloudjs.websocket_recieved = function (action, data)
+{
+	// See if we have any registered callbacks.
+	if((typeof this.ws_callbacks[action]) == 'undefined')
+	{
+		return false;
+	}
+	
+	// Loop through and call the callbacks.
+	for(var i in this.ws_callbacks[action])
+	{
+		this.ws_callbacks[action][i](data);
+	}
 }
 
 // ------------------ Polling ------------------------ //
