@@ -819,7 +819,7 @@ Handlebars.registerHelper('htmlify', function(lvalue, rvalue, options) {
 });
 
 //
-// {{compare unicorns ponies operator="<"}}
+// {{#compare unicorns ponies operator="<"}}
 // 	I knew it, unicorns are just low-quality ponies!
 // {{/compare}}
 // 
