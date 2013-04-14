@@ -5,6 +5,7 @@ var cloudjs = {
 	api_after_form_api_json: [],
 	api_before_form_api_json: [],
 	api_url_replace: {},
+	after_page_load: [],
 	polling_list: {},
 	ws_callbacks: {},
 	ws_socket: null,
@@ -266,6 +267,14 @@ cloudjs.after_body_load = function (response)
 	return true;
 }
 
+//
+// Set callbacks for after a page loads.
+//
+cloudjs.set_after_page_load = function (funct)
+{
+	cloudjs.after_page_load.push(funct);
+}
+
 // -------------- Helper Functions ---------------- //
 
 
@@ -274,6 +283,12 @@ cloudjs.after_body_load = function (response)
 //
 cloudjs.setup_page = function (response)
 {
+	// Loop through any callbacks we might have registered
+	for(var i in cloudjs.after_page_load)
+	{
+		cloudjs.after_page_load[i]();
+	}
+
 	this.refresh_bindings();
 	this.after_body_load(response);
 }
