@@ -848,6 +848,42 @@ Handlebars.registerHelper('htmlify', function(lvalue, rvalue, options) {
 });
 
 //
+// Helper for building pagination.
+//
+// {{pagination '#pagination-tmpl' limit offset count filtered}}
+//
+Handlebars.registerHelper('pagination', function(cont, limit, offset, count, filtered) {
+	var source = $(cont).html();
+	var list = Handlebars.compile(source);
+	
+	// Setup data we pass in.
+	var data = {
+		page_count: Math.ceil(filtered / limit),
+		count: count,
+		limit: limit,
+		offset: offset,
+		filtered: filtered,
+		prev: (parseInt(offset) - parseInt(limit)),
+		next: (parseInt(offset) + parseInt(limit)),
+		pages: []
+	}
+	
+	// Build pages.	
+	for(var i = 1; i <= data.page_count; i++)
+	{
+		data.pages.push({ 
+			active: false, 
+			page: i, 
+			limit: data.limit,
+			offset: (data.limit * i) ? (data.limit * i) - data.limit : 0, 
+			active: (data.offset == ((data.limit * i) - data.limit)) ? 'active' : ''
+		});
+	}
+	
+	return new Handlebars.SafeString(list(data));
+});
+
+//
 // {{#compare unicorns ponies operator="<"}}
 // 	I knew it, unicorns are just low-quality ponies!
 // {{/compare}}
